@@ -95,12 +95,19 @@ function Index() {
           <a className="story-link" href="#apropos">
             À propos
           </a>
-          <a className="story-link" href="#contact">
+          <a
+            className="story-link"
+            href="https://calendly.com/contact-onimpact/prise-de-contact"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             Contact
           </a>
         </nav>
         <a
-          href="#contact"
+          href="https://calendly.com/contact-onimpact/prise-de-contact"
+          target="_blank"
+          rel="noopener noreferrer"
           className="inline-flex shrink-0 items-center gap-2 rounded-full bg-primary px-[clamp(0.75rem,1.6vw,1rem)] py-[clamp(0.3rem,0.7vw,0.4rem)] text-[clamp(0.72rem,1vw,0.875rem)] font-medium text-primary-foreground transition-transform hover:scale-105"
         >
           Nous contacter

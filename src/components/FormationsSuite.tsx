@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type AnimationEvent, type ReactNode } from "react";
+import { useEffect, useRef, useState } from "react";
 import illustratorIcon from "@/assets/tools/illustrator.png";
 import photoshopIcon from "@/assets/tools/photoshop.png";
 import canvaIcon from "@/assets/tools/canva.png";
@@ -8,6 +8,7 @@ import geminiIcon from "@/assets/tools/gemini.png";
 import claudeIcon from "@/assets/tools/claude.png";
 import higgsfieldIcon from "@/assets/tools/higgsfield.png";
 import meteorite from "@/assets/meteorite.png";
+import constellationBg from "@/assets/fond-constellation.png";
 
 const MARQUEE = [
   "UN PROMPT QUI SERT",
@@ -49,171 +50,6 @@ const STATS = [
 ] as const;
 
 const STAT_MS = 7000;
-const FLAP_STAGGER = 80;
-const FLAP_MS = 640;
-
-function glyphChar(ch: string | undefined) {
-  if (!ch || ch === " ") return "\u00a0";
-  return ch;
-}
-
-function SplitFlapChar({
-  from,
-  to,
-  delay,
-  play,
-  cycle,
-}: {
-  from: string;
-  to: string;
-  delay: number;
-  play: boolean;
-  cycle: number;
-}) {
-  const [flipping, setFlipping] = useState(false);
-  const [current, setCurrent] = useState(from);
-
-  useEffect(() => {
-    setFlipping(false);
-    if (!play || from === to) {
-      setCurrent(to);
-      return;
-    }
-    setCurrent(from);
-    const start = window.setTimeout(() => setFlipping(true), delay);
-    const end = window.setTimeout(() => {
-      setCurrent(to);
-      setFlipping(false);
-    }, delay + FLAP_MS);
-    return () => {
-      window.clearTimeout(start);
-      window.clearTimeout(end);
-    };
-  }, [from, to, delay, play, cycle]);
-
-  const onBottomEnd = (event: AnimationEvent<HTMLSpanElement>) => {
-    if (!event.animationName.includes("sf-bottom")) return;
-    setCurrent(to);
-    setFlipping(false);
-  };
-
-  const shown = flipping ? from : current;
-  const next = flipping ? to : current;
-
-  return (
-    <span className={`split-flap${flipping ? " is-flipping" : ""}`}>
-      <span className="sf-measure" aria-hidden>
-        <span>{glyphChar(from)}</span>
-        <span>{glyphChar(to)}</span>
-        <span>{glyphChar(shown)}</span>
-      </span>
-      <span className="sf-idle">{glyphChar(shown)}</span>
-      <span className="sf-static-top">
-        <span className="sf-glyph">{glyphChar(next)}</span>
-      </span>
-      <span className="sf-static-bottom">
-        <span className="sf-glyph">{glyphChar(shown)}</span>
-      </span>
-      <span className="sf-flip-top">
-        <span className="sf-glyph">{glyphChar(shown)}</span>
-      </span>
-      <span className="sf-flip-bottom" onAnimationEnd={onBottomEnd}>
-        <span className="sf-glyph">{glyphChar(next)}</span>
-      </span>
-    </span>
-  );
-}
-
-function FlapText({
-  text,
-  instant = false,
-  className,
-  stagger = FLAP_STAGGER,
-}: {
-  text: string;
-  instant?: boolean;
-  className?: string;
-  stagger?: number;
-}) {
-  const prevRef = useRef(text);
-  const [from, setFrom] = useState(text);
-  const [to, setTo] = useState(text);
-  const [play, setPlay] = useState(false);
-  const [cycle, setCycle] = useState(0);
-
-  useEffect(() => {
-    if (instant || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      prevRef.current = text;
-      setFrom(text);
-      setTo(text);
-      setPlay(false);
-      return;
-    }
-    if (text === prevRef.current) return;
-    const previous = prevRef.current;
-    prevRef.current = text;
-    setFrom(previous);
-    setTo(text);
-    setPlay(true);
-    setCycle((value) => value + 1);
-    const settle = window.setTimeout(
-      () => {
-        setFrom(text);
-        setPlay(false);
-      },
-      Math.max(previous.length, text.length) * stagger + FLAP_MS,
-    );
-    return () => window.clearTimeout(settle);
-  }, [text, instant, stagger]);
-
-  if (instant) {
-    return <span className={className}>{text}</span>;
-  }
-
-  const len = Math.max(from.length, to.length);
-  const guide = (to.length >= from.length ? to : from).padEnd(len, " ");
-  const nodes: ReactNode[] = [];
-  let index = 0;
-  while (index < len) {
-    if (guide[index] === " ") {
-      nodes.push(
-        <SplitFlapChar
-          key={`c-${index}`}
-          from={from[index] ?? " "}
-          to={to[index] ?? " "}
-          delay={index * stagger}
-          play={play}
-          cycle={cycle}
-        />,
-      );
-      index += 1;
-      continue;
-    }
-    const start = index;
-    const chars: ReactNode[] = [];
-    while (index < len && guide[index] !== " ") {
-      const i = index;
-      chars.push(
-        <SplitFlapChar
-          key={`c-${i}`}
-          from={from[i] ?? " "}
-          to={to[i] ?? " "}
-          delay={i * stagger}
-          play={play}
-          cycle={cycle}
-        />,
-      );
-      index += 1;
-    }
-    nodes.push(
-      <span key={`w-${start}`} className="inline-block whitespace-nowrap">
-        {chars}
-      </span>,
-    );
-  }
-
-  return <span className={`flap-line ${className ?? ""}`}>{nodes}</span>;
-}
 
 const PILLARS = [
   {
@@ -286,7 +122,7 @@ function ToolConstellation({ tools }: { tools: readonly string[] }) {
 
     let raf = 0;
     const started = performance.now();
-    const duration = 8600;
+    const duration = 18000;
     const ease = (u: number) => u * u * (3 - 2 * u);
     const tick = (now: number) => {
       const length = path.getTotalLength();
@@ -303,6 +139,13 @@ function ToolConstellation({ tools }: { tools: readonly string[] }) {
 
   return (
     <div className="relative h-[clamp(18rem,36vw,26rem)] w-full overflow-hidden bg-black">
+      <img
+        src={constellationBg}
+        alt=""
+        aria-hidden
+        className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center"
+        draggable={false}
+      />
       <svg
         viewBox="0 0 100 100"
         preserveAspectRatio="none"
@@ -405,46 +248,33 @@ function MeteorMark() {
   );
 }
 
-function StatBoard({
-  slide,
-  instant = false,
-}: {
-  slide: (typeof STATS)[number];
-  instant?: boolean;
-}) {
+function StatBoard({ slide }: { slide: (typeof STATS)[number] }) {
   return (
     <div className="flex w-full flex-col gap-[clamp(2rem,8vw,6rem)] pr-[clamp(1.4rem,6vw,3.4rem)] md:flex-row md:items-start md:justify-between">
       <article className="min-w-0 flex-1">
         <p className="inline-block bg-[#2f6dff] px-[0.18em] py-[0.06em] font-sans text-[clamp(4.4rem,14vw,8.4rem)] font-black leading-[0.82] tabular-nums text-white">
-          <FlapText text={slide.percent} instant={instant} stagger={80} />
+          {slide.percent}
         </p>
         <p className="mt-[clamp(0.8rem,2vh,1.4rem)] max-w-none text-[clamp(1.55rem,3.6vw,2.35rem)] font-bold leading-[1.08] tracking-wide text-white">
-          <FlapText text={`${slide.prefix} `} instant={instant} />
-          <span className="text-[#2f6dff]">
-            <FlapText text={slide.highlight} instant={instant} />
-          </span>
+          {slide.prefix} <span className="text-[#2f6dff]">{slide.highlight}</span>
           <br />
           <span className="underline decoration-[#2f6dff] decoration-4 underline-offset-[6px]">
-            <FlapText text={slide.underline} instant={instant} />
+            {slide.underline}
           </span>
           <br />
-          <FlapText text={slide.rest} instant={instant} />
+          {slide.rest}
         </p>
       </article>
       <article className="flex-none">
         <div className="inline-flex translate-x-[clamp(1.4rem,6vw,3.4rem)] translate-y-[clamp(0.5rem,1.8vh,1.1rem)] flex-col items-center">
           <p className="bg-[#2f6dff] px-[0.55em] pb-[0.32em] pt-[0.90em] text-center font-display leading-[0.88] text-white">
-            <span className="block text-[clamp(1.15rem,3.2vw,1.9rem)]">
-              <FlapText text={slide.lossLead} instant={instant} stagger={70} />
-            </span>
-            <span className="mt-[0.22em] block text-[clamp(3.6rem,10vw,6.4rem)]">
-              <FlapText text={slide.lossWord} instant={instant} stagger={90} />
-            </span>
+            <span className="block text-[clamp(1.15rem,3.2vw,1.9rem)]">{slide.lossLead}</span>
+            <span className="mt-[0.22em] block text-[clamp(3.6rem,10vw,6.4rem)]">{slide.lossWord}</span>
           </p>
           <p className="mt-[clamp(1.1rem,3vh,1.8rem)] text-center font-sans text-[clamp(1.15rem,2.4vw,1.55rem)] font-bold leading-[1.2] tracking-wide text-white">
-            <FlapText text={slide.caption[0]} instant={instant} />
+            {slide.caption[0]}
             <br />
-            <FlapText text={slide.caption[1]} instant={instant} />
+            {slide.caption[1]}
           </p>
         </div>
       </article>
@@ -476,9 +306,9 @@ function StatsCarousel() {
     >
       <div className="relative mx-auto grid w-full max-w-7xl px-[clamp(0.5rem,2vw,1rem)]">
         <div className="invisible pointer-events-none col-start-1 row-start-1" aria-hidden>
-          <StatBoard slide={STATS[2]} instant />
+          <StatBoard slide={STATS[2]} />
         </div>
-        <div className="col-start-1 row-start-1">
+        <div key={index} className="stat-swap col-start-1 row-start-1">
           <StatBoard slide={slide} />
         </div>
       </div>
@@ -591,7 +421,9 @@ export function FormationsSuite() {
 
       <a
         id="contact"
-        href="mailto:hello@onimpact.fr"
+        href="https://calendly.com/contact-onimpact/prise-de-contact"
+        target="_blank"
+        rel="noopener noreferrer"
         className="flex min-h-[clamp(6.5rem,18vh,9.5rem)] items-center justify-center bg-[#2f6dff] px-6 text-center font-display text-[clamp(1.8rem,6vw,3.6rem)] tracking-[0.08em] text-white transition-opacity hover:opacity-90"
       >
         CONTACTEZ NOUS

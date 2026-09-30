@@ -370,143 +370,22 @@
   will-change: transform;
 }
 
-@keyframes sf-top {
+@keyframes stat-swap {
   from {
-    transform: rotateX(0deg);
+    opacity: 0;
   }
   to {
-    transform: rotateX(-90deg);
+    opacity: 1;
   }
 }
 
-@keyframes sf-bottom {
-  from {
-    transform: rotateX(90deg);
-  }
-  to {
-    transform: rotateX(0deg);
-  }
-}
-
-.flap-line {
-  perspective: none;
-}
-
-.split-flap {
-  position: relative;
-  display: inline-grid;
-  vertical-align: baseline;
-  overflow: visible;
-  transform-style: preserve-3d;
-  perspective: 110px;
-}
-
-.sf-measure {
-  grid-area: 1 / 1;
-  display: grid;
-  visibility: hidden;
-  pointer-events: none;
-}
-
-.sf-measure > span {
-  grid-area: 1 / 1;
-  white-space: pre;
-}
-
-.sf-idle {
-  grid-area: 1 / 1;
-  white-space: pre;
-}
-
-.split-flap.is-flipping .sf-idle {
-  visibility: hidden;
-}
-
-.sf-static-top,
-.sf-static-bottom,
-.sf-flip-top,
-.sf-flip-bottom {
-  position: absolute;
-  left: 0;
-  right: 0;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-.sf-static-top,
-.sf-flip-top {
-  top: 0;
-  height: 50%;
-}
-
-.sf-static-bottom,
-.sf-flip-bottom {
-  bottom: 0;
-  height: 50%;
-}
-
-.sf-glyph {
-  display: flex;
-  height: 200%;
-  align-items: center;
-  justify-content: center;
-  white-space: pre;
-  line-height: 1;
-}
-
-.sf-static-bottom .sf-glyph,
-.sf-flip-bottom .sf-glyph {
-  margin-top: -100%;
-}
-
-.sf-static-top {
-  z-index: 1;
-}
-
-.sf-static-bottom {
-  z-index: 1;
-}
-
-.sf-flip-top,
-.sf-flip-bottom {
-  z-index: 2;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  transform-style: preserve-3d;
-}
-
-.sf-flip-top {
-  transform-origin: 50% 100%;
-}
-
-.sf-flip-bottom {
-  transform-origin: 50% 0%;
-  transform: rotateX(90deg);
-}
-
-.split-flap.is-flipping .sf-flip-top {
-  z-index: 4;
-  animation: sf-top 0.32s ease-in forwards;
-}
-
-.split-flap.is-flipping .sf-flip-bottom {
-  z-index: 3;
-  animation: sf-bottom 0.32s ease-out 0.32s forwards;
-}
-
-.split-flap:not(.is-flipping) .sf-static-top,
-.split-flap:not(.is-flipping) .sf-static-bottom,
-.split-flap:not(.is-flipping) .sf-flip-top,
-.split-flap:not(.is-flipping) .sf-flip-bottom {
-  visibility: hidden;
+.stat-swap {
+  animation: stat-swap 0.45s ease both;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .split-flap.is-flipping .sf-flip-top,
-  .split-flap.is-flipping .sf-flip-bottom {
+  .stat-swap {
     animation: none;
-    transform: none;
-    visibility: hidden;
   }
 }
 

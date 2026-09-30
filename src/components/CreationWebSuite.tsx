@@ -127,7 +127,9 @@ export function CreationWebSuite() {
             DIMENSION À VOTRE MARQUE
           </h2>
           <a
-            href="mailto:hello@onimpact.fr"
+            href="https://calendly.com/contact-onimpact/prise-de-contact"
+            target="_blank"
+            rel="noopener noreferrer"
             className="mt-[clamp(1.6rem,4.5vh,2.4rem)] inline-flex items-center justify-center rounded-full bg-[#2f6dff] px-[clamp(1.6rem,4vw,2.6rem)] py-[clamp(0.7rem,1.5vw,0.95rem)] text-[clamp(0.72rem,1.15vw,0.92rem)] font-bold uppercase tracking-[0.16em] text-white transition-transform hover:scale-[1.03]"
           >
             Parlons de votre projet
