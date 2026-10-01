@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import illustratorIcon from "@/assets/tools/illustrator.png";
 import photoshopIcon from "@/assets/tools/photoshop.png";
 import canvaIcon from "@/assets/tools/canva.png";
@@ -108,107 +109,73 @@ function ToolConstellation({ tools }: { tools: readonly string[] }) {
   ];
   const polyline = points.map((p) => `${p.x},${p.y}`).join(" ");
   const pathD = points.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ");
-  const pathRef = useRef<SVGPathElement>(null);
-  const dotRef = useRef<HTMLSpanElement>(null);
+  const sparkRef = useRef<SVGEllipseElement>(null);
 
-  useEffect(() => {
-    const path = pathRef.current;
-    const dot = dotRef.current;
-    if (!path || !dot) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      dot.style.opacity = "0";
-      return;
-    }
+  useLayoutEffect(() => {
+    const spark = sparkRef.current;
+    const svg = spark?.ownerSVGElement;
+    if (!spark || !svg) return;
 
-    let raf = 0;
-    const started = performance.now();
-    const duration = 18000;
-    const ease = (u: number) => u * u * (3 - 2 * u);
-    const tick = (now: number) => {
-      const length = path.getTotalLength();
-      const cycle = ((now - started) / duration) % 2;
-      const linear = cycle > 1 ? 2 - cycle : cycle;
-      const point = path.getPointAtLength(ease(linear) * length);
-      dot.style.left = `${point.x}%`;
-      dot.style.top = `${point.y}%`;
-      raf = requestAnimationFrame(tick);
+    const fit = () => {
+      const box = svg.getBoundingClientRect();
+      if (!box.width || !box.height) return;
+      const radius = 5.5;
+      spark.setAttribute("rx", String(radius / (box.width / 100)));
+      spark.setAttribute("ry", String(radius / (box.height / 100)));
     };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [pathD]);
+
+    fit();
+    const observer = new ResizeObserver(fit);
+    observer.observe(svg);
+    return () => observer.disconnect();
+  }, []);
 
   return (
-    <div className="relative h-[clamp(18rem,36vw,26rem)] w-full overflow-hidden bg-black">
+    <div className="relative h-[clamp(22rem,56vh,40rem)] w-full overflow-hidden bg-black">
       <img
         src={constellationBg}
         alt=""
         aria-hidden
-        className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center"
+        className="constellation-bg pointer-events-none absolute inset-0 h-full w-full object-cover object-center"
         draggable={false}
       />
+      <img
+        src={constellationBg}
+        alt=""
+        aria-hidden
+        className="constellation-bg-blur pointer-events-none absolute inset-0 h-full w-full object-cover object-center"
+        draggable={false}
+      />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-[22%] bg-gradient-to-b from-black via-black/55 to-transparent" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[24%] bg-gradient-to-t from-black via-black/55 to-transparent" />
       <svg
         viewBox="0 0 100 100"
         preserveAspectRatio="none"
-        className="absolute inset-0 h-full w-full"
+        className="absolute inset-0 z-[2] h-full w-full"
         aria-hidden
       >
-        <defs>
-          <filter id="constellation-bloom" x="-40%" y="-80%" width="180%" height="260%">
-            <feGaussianBlur stdDeviation="7" result="bloom" />
-            <feMerge>
-              <feMergeNode in="bloom" />
-              <feMergeNode in="bloom" />
-            </feMerge>
-          </filter>
-          <filter id="constellation-glow" x="-20%" y="-40%" width="140%" height="180%">
-            <feGaussianBlur stdDeviation="1.6" result="blur" />
-            <feMerge>
-              <feMergeNode in="blur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-        </defs>
         <polyline
           points={polyline}
           fill="none"
-          stroke="#1c4fd0"
-          strokeWidth="18"
+          stroke="white"
+          strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
-          opacity="0.55"
-          filter="url(#constellation-bloom)"
+          vectorEffect="non-scaling-stroke"
         />
-        <polyline
-          points={polyline}
-          fill="none"
-          stroke="#4b8dff"
-          strokeWidth="8"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          opacity="0.7"
-          filter="url(#constellation-bloom)"
-        />
-        <polyline
-          points={polyline}
-          fill="none"
-          stroke="rgba(180, 210, 255, 0.7)"
-          strokeWidth="2.2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          filter="url(#constellation-glow)"
-        />
-        <polyline
-          points={polyline}
-          fill="none"
-          stroke="rgba(255, 255, 255, 0.95)"
-          strokeWidth="0.55"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <path ref={pathRef} d={pathD} fill="none" />
+        <path id="constellation-route" d={pathD} fill="none" />
+        <ellipse ref={sparkRef} rx="0.29" ry="0.91" fill="#fff" className="constellation-spark">
+          <animateMotion
+            dur="18s"
+            repeatCount="indefinite"
+            keyPoints="0;1;0"
+            keyTimes="0;0.5;1"
+            calcMode="linear"
+          >
+            <mpath href="#constellation-route" />
+          </animateMotion>
+        </ellipse>
       </svg>
-
-      <span ref={dotRef} className="constellation-dot" aria-hidden />
 
       {CONSTELLATION_LAYOUT.map((pos, i) => {
         const id = tools[i];
@@ -217,7 +184,7 @@ function ToolConstellation({ tools }: { tools: readonly string[] }) {
         return (
           <div
             key={`${id}-${i}`}
-            className="absolute z-10 size-[clamp(3.6rem,6.8vw,5.15rem)] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-[1.2rem] bg-black/55"
+            className="absolute z-10 size-[clamp(3.4rem,6.2vw,4.75rem)] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-[1.15rem] bg-black"
             style={{ left: `${pos.x}%`, top: `${pos.y}%` }}
             title={TOOL_LABELS[id] ?? id}
           >
@@ -236,15 +203,178 @@ function ToolConstellation({ tools }: { tools: readonly string[] }) {
   );
 }
 
-function MeteorMark() {
+const CALENDLY_URL =
+  "https://calendly.com/contact-onimpact/prise-de-contact?background_color=2f6dff&text_color=ffffff&primary_color=2f6dff";
+
+function CalendlyEmbed() {
+  const parentRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const parent = parentRef.current;
+    if (!parent) return;
+
+    const init = () => {
+      const calendly = (
+        window as Window & {
+          Calendly?: { initInlineWidget: (options: { url: string; parentElement: HTMLElement }) => void };
+        }
+      ).Calendly;
+      if (!calendly || !parentRef.current) return;
+      parentRef.current.innerHTML = "";
+      calendly.initInlineWidget({ url: CALENDLY_URL, parentElement: parentRef.current });
+    };
+
+    if (
+      (
+        window as Window & {
+          Calendly?: { initInlineWidget: (options: { url: string; parentElement: HTMLElement }) => void };
+        }
+      ).Calendly
+    ) {
+      init();
+      return () => {
+        parent.innerHTML = "";
+      };
+    }
+
+    const src = "https://assets.calendly.com/assets/external/widget.js";
+    let script = document.querySelector<HTMLScriptElement>(`script[src="${src}"]`);
+    if (!script) {
+      script = document.createElement("script");
+      script.src = src;
+      script.async = true;
+      document.body.appendChild(script);
+    }
+    script.addEventListener("load", init);
+    return () => {
+      script?.removeEventListener("load", init);
+      parent.innerHTML = "";
+    };
+  }, []);
+
+  return <div ref={parentRef} className="h-[740px] w-full min-w-[320px]" />;
+}
+
+function MeteorVisual({ fixed }: { fixed?: { top: number; opacity: number } }) {
   return (
     <img
       src={meteorite}
       alt=""
       aria-hidden
-      className="block h-[clamp(4.4rem,11vw,7.2rem)] w-auto origin-center -translate-x-[22%] translate-y-[6%] -rotate-45 select-none"
       draggable={false}
+      className="pointer-events-none block h-[clamp(4.4rem,11vw,7.2rem)] w-auto origin-center -translate-x-[22%] translate-y-[6%] -rotate-45 select-none"
+      style={
+        fixed
+          ? {
+              position: "fixed",
+              top: fixed.top,
+              left: "50%",
+              zIndex: 40,
+              opacity: fixed.opacity,
+              transform: "translateX(-72%) translateY(6%) rotate(-45deg)",
+            }
+          : undefined
+      }
     />
+  );
+}
+
+function MeteorDrop() {
+  const slotRef = useRef<HTMLDivElement>(null);
+  const flyingRef = useRef<HTMLImageElement>(null);
+  const poseRef = useRef({ top: 80, opacity: 0 });
+  const [phase, setPhase] = useState<"wait" | "fall" | "rest">("wait");
+
+  useEffect(() => {
+    if (phase !== "fall") return;
+    const flying = flyingRef.current;
+    if (!flying) return;
+    flying.style.top = `${poseRef.current.top}px`;
+    flying.style.opacity = String(poseRef.current.opacity);
+  }, [phase]);
+
+  useEffect(() => {
+    const phrase = document.getElementById("methode-phrase");
+    const slot = slotRef.current;
+    if (!phrase || !slot) return;
+
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setPhase("rest");
+      return;
+    }
+
+    let raf = 0;
+    const update = () => {
+      const phraseBottom = phrase.getBoundingClientRect().bottom + window.scrollY;
+      const slotTop = slot.getBoundingClientRect().top + window.scrollY;
+      const appear = Math.max(76, window.innerHeight * 0.1);
+      const start = phraseBottom;
+      const end = Math.max(start + 1, slotTop - window.innerHeight * 0.36);
+      const y = window.scrollY;
+
+      if (y < start) {
+        setPhase((current) => (current === "wait" ? current : "wait"));
+        return;
+      }
+
+      const progress = Math.min(1, (y - start) / (end - start));
+      if (progress >= 1) {
+        setPhase((current) => (current === "rest" ? current : "rest"));
+        return;
+      }
+
+      const slotScreen = slot.getBoundingClientRect().top;
+      const top = appear + (slotScreen - appear) * progress;
+      const opacity = Math.min(1, progress / 0.16);
+      poseRef.current = { top, opacity };
+      const flying = flyingRef.current;
+      if (flying) {
+        flying.style.top = `${top}px`;
+        flying.style.opacity = String(opacity);
+      }
+      setPhase((current) => (current === "fall" ? current : "fall"));
+    };
+
+    const onScroll = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(update);
+    };
+
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, []);
+
+  return (
+    <div ref={slotRef} className="flex min-h-[clamp(4.4rem,11vw,7.2rem)] items-center justify-center">
+      {phase === "rest" ? <MeteorVisual /> : null}
+      {phase === "fall"
+        ? createPortal(
+            <img
+              ref={flyingRef}
+              src={meteorite}
+              alt=""
+              aria-hidden
+              draggable={false}
+              className="pointer-events-none h-[clamp(4.4rem,11vw,7.2rem)] w-auto origin-center select-none"
+              style={{
+                position: "fixed",
+                top: poseRef.current.top,
+                left: "50%",
+                zIndex: 40,
+                opacity: poseRef.current.opacity,
+                transform: "translateX(-72%) translateY(6%) rotate(-45deg)",
+              }}
+            />,
+            document.body,
+          )
+        : null}
+    </div>
   );
 }
 
@@ -302,7 +432,7 @@ function StatsCarousel() {
   return (
     <section
       id="services"
-      className="px-[clamp(1rem,4vw,1.5rem)] pt-[clamp(3.5rem,10vh,6.5rem)] pb-[clamp(2.5rem,7vh,4.5rem)]"
+      className="px-[clamp(1rem,4vw,1.5rem)] pt-[clamp(3.5rem,10vh,6.5rem)] pb-[clamp(5rem,12vh,8rem)]"
     >
       <div className="relative mx-auto grid w-full max-w-7xl px-[clamp(0.5rem,2vw,1rem)]">
         <div className="invisible pointer-events-none col-start-1 row-start-1" aria-hidden>
@@ -353,7 +483,7 @@ export function FormationsSuite() {
       />
       <StatsCarousel />
 
-      <div className="mt-[clamp(1.2rem,4vh,2.4rem)] overflow-hidden bg-[#2f6dff] py-[clamp(1.9rem,5.5vh,2.9rem)]">
+      <div className="mt-[clamp(3.5rem,9vh,6.5rem)] overflow-hidden bg-[#2f6dff] py-[clamp(1.9rem,5.5vh,2.9rem)]">
         <div className="suite-marquee-track flex w-max items-center gap-0 whitespace-nowrap font-display text-[clamp(1.05rem,3.2vw,2rem)] tracking-[0.08em] text-white">
           {loop.map((item, i) => (
             <span key={`${item}-${i}`} className="flex items-center">
@@ -365,24 +495,24 @@ export function FormationsSuite() {
       </div>
 
       <section id="apropos" className="relative bg-black text-center">
-        <div className="px-[clamp(1rem,4vw,1.5rem)] pt-[clamp(4.5rem,12vh,7.5rem)] pb-[clamp(2.4rem,6vh,3.6rem)]">
-          <h2 className="mx-auto inline-block text-left font-display leading-[0.86] tracking-wide">
-            <span className="block text-[clamp(1.45rem,4.8vw,3.15rem)] text-[#b4b4b4]">
+        <div className="px-[clamp(1rem,4vw,1.5rem)] pt-[clamp(8rem,18vh,13rem)] pb-[clamp(12rem,26vh,20rem)]">
+          <h2 className="mx-auto inline-block text-left font-display leading-[0.92] tracking-wide">
+            <span className="block text-[clamp(1.7rem,5.4vw,3.65rem)] text-[#b4b4b4]">
               L&apos;OUTIL N&apos;EST RIEN
             </span>
-            <span className="mt-[0.02em] block text-[clamp(2.65rem,9vw,6.05rem)] text-white">
+            <span className="mt-[0.28em] block text-[clamp(3.05rem,10vw,6.9rem)] text-white">
               SANS LA MÉTHODE
             </span>
           </h2>
 
-          <p className="mt-[clamp(3.2rem,9vh,5rem)] text-[clamp(0.62rem,1vw,0.78rem)] uppercase tracking-[0.42em] text-white">
+          <p className="mt-[clamp(4.4rem,12vh,7rem)] text-[clamp(0.74rem,1.15vw,0.95rem)] uppercase tracking-[0.42em] text-white">
             Nos solutions
           </p>
-          <p className="mt-3 font-display text-[clamp(1.55rem,4.4vw,2.85rem)] tracking-wide text-white">
+          <p className="mt-[clamp(1.15rem,2.8vh,1.9rem)] font-display text-[clamp(1.85rem,5.1vw,3.35rem)] leading-[1.15] tracking-wide text-white">
             TROIS PILIERS FONDAMENTAUX.
           </p>
 
-          <div className="mt-[clamp(1.6rem,4.5vh,2.4rem)] flex flex-wrap items-center justify-center gap-[clamp(0.7rem,1.6vw,1.15rem)]">
+          <div className="mt-[clamp(2.6rem,6.5vh,4rem)] flex flex-wrap items-center justify-center gap-[clamp(0.85rem,1.8vw,1.35rem)]">
             {PILLARS.map((item) => {
               const selected = item.id === pillar;
               return (
@@ -390,7 +520,7 @@ export function FormationsSuite() {
                   key={item.id}
                   type="button"
                   onClick={() => setPillar(item.id)}
-                  className={`rounded-full border px-[clamp(1.15rem,2.4vw,1.7rem)] py-[0.55rem] text-[clamp(0.62rem,0.95vw,0.76rem)] uppercase tracking-[0.14em] transition-colors ${
+                  className={`rounded-full border px-[clamp(1.3rem,2.6vw,1.95rem)] py-[0.7rem] text-[clamp(0.74rem,1.1vw,0.92rem)] uppercase tracking-[0.14em] transition-colors ${
                     selected
                       ? "border-[#2f6dff] bg-[#2f6dff] text-white shadow-[0_0_14px_rgba(47,109,255,0.75)]"
                       : "border-white/90 bg-transparent text-white shadow-[0_0_12px_rgba(255,255,255,0.55)] hover:bg-white/10"
@@ -402,10 +532,14 @@ export function FormationsSuite() {
             })}
           </div>
 
-          <p className="mx-auto mt-[clamp(1.4rem,3.6vh,2rem)] max-w-2xl text-[clamp(0.78rem,1.2vw,0.98rem)] font-bold leading-[1.45] text-white">
+          <p
+            id="methode-phrase"
+            className="mx-auto mt-[clamp(2.4rem,5.5vh,3.6rem)] max-w-3xl text-[clamp(0.92rem,1.45vw,1.18rem)] font-bold leading-[1.7] text-white"
+          >
             On Ne Vous Apprend Pas Un Outil. On Vous Apprend
-            <br />
-            À Choisir Le Bon, Au Bon Moment, Pour Le Bon Résultat.
+            <span className="mt-[0.65em] block">
+              À Choisir Le Bon, Au Bon Moment, Pour Le Bon Résultat.
+            </span>
           </p>
         </div>
 
@@ -413,21 +547,20 @@ export function FormationsSuite() {
       </section>
 
       <section className="flex flex-col items-center bg-black px-[clamp(1rem,4vw,1.5rem)] pb-[clamp(4rem,12vh,6.5rem)] pt-[clamp(3rem,8vh,4.5rem)]">
-        <MeteorMark />
+        <MeteorDrop />
         <h2 className="text-center font-display text-[clamp(2.4rem,9vw,5.8rem)] leading-none tracking-wide">
           BRISEZ VOS LIMITES
         </h2>
       </section>
 
-      <a
-        id="contact"
-        href="https://calendly.com/contact-onimpact/prise-de-contact"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="flex min-h-[clamp(6.5rem,18vh,9.5rem)] items-center justify-center bg-[#2f6dff] px-6 text-center font-display text-[clamp(1.8rem,6vw,3.6rem)] tracking-[0.08em] text-white transition-opacity hover:opacity-90"
-      >
-        CONTACTEZ NOUS
-      </a>
+      <section id="contact" className="scroll-mt-24 bg-[#2f6dff] pb-[clamp(2.5rem,7vh,4.5rem)]">
+        <h2 className="flex min-h-[clamp(6.5rem,18vh,9.5rem)] items-center justify-center px-6 text-center font-display text-[clamp(1.8rem,6vw,3.6rem)] tracking-[0.08em] text-white">
+          CONTACTEZ NOUS
+        </h2>
+        <div className="mx-auto mt-[clamp(1.5rem,4vh,2.5rem)] w-full max-w-5xl overflow-hidden px-[clamp(1rem,4vw,1.5rem)]">
+          <CalendlyEmbed />
+        </div>
+      </section>
     </div>
   );
 }

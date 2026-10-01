@@ -297,61 +297,40 @@
   mask-image: linear-gradient(to bottom, #000 0%, #000 10%, transparent 28%);
 }
 
-.constellation-dot {
-  position: absolute;
-  z-index: 8;
-  width: 0.7rem;
-  height: 0.7rem;
-  border-radius: 999px;
-  background: #fff;
-  box-shadow:
-    0 0 5px 2px #fff,
-    0 0 16px 7px rgba(214, 232, 255, 1),
-    0 0 34px 14px rgba(90, 160, 255, 0.9),
-    0 0 64px 22px rgba(47, 109, 255, 0.55);
-  transform: translate(-50%, -50%);
-  pointer-events: none;
-  animation: constellation-twinkle 1.7s ease-in-out infinite;
+.constellation-bg {
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 20%, #000 80%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, #000 20%, #000 80%, transparent 100%);
 }
 
-.constellation-dot::before,
-.constellation-dot::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  border-radius: 999px;
-  pointer-events: none;
+.constellation-bg-blur {
+  filter: blur(42px);
+  transform: scale(1.08);
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    #000 10%,
+    transparent 30%,
+    transparent 70%,
+    #000 90%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    #000 10%,
+    transparent 30%,
+    transparent 70%,
+    #000 90%,
+    transparent 100%
+  );
 }
 
-.constellation-dot::before {
-  width: 2.8rem;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.95) 50%, transparent);
-  transform: translate(-50%, -50%);
-}
-
-.constellation-dot::after {
-  width: 2px;
-  height: 2.8rem;
-  background: linear-gradient(transparent, rgba(255, 255, 255, 0.95) 50%, transparent);
-  transform: translate(-50%, -50%);
-}
-
-@keyframes constellation-twinkle {
-  0%,
-  100% {
-    transform: translate(-50%, -50%) scale(0.86);
-    opacity: 0.8;
-  }
-  50% {
-    transform: translate(-50%, -50%) scale(1.12);
-    opacity: 1;
-  }
+.constellation-spark {
+  filter: drop-shadow(0 0 4px #fff) drop-shadow(0 0 10px rgba(190, 216, 255, 0.95));
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .constellation-dot {
+  .constellation-spark {
     display: none;
   }
 }

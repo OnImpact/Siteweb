@@ -107,10 +107,7 @@ export function CreationWebSuite() {
         </div>
       </section>
 
-      <section
-        id="contact"
-        className="relative isolate overflow-hidden bg-[#020617]"
-      >
+      <section className="relative isolate overflow-hidden bg-[#020617]">
         <img
           src={nightMountains}
           alt=""
@@ -127,9 +124,14 @@ export function CreationWebSuite() {
             DIMENSION À VOTRE MARQUE
           </h2>
           <a
-            href="https://calendly.com/contact-onimpact/prise-de-contact"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="#contact"
+            onClick={(event) => {
+              event.preventDefault();
+              if (window.location.hash !== "#contact") {
+                window.history.replaceState(null, "", "#contact");
+              }
+              window.dispatchEvent(new HashChangeEvent("hashchange"));
+            }}
             className="mt-[clamp(1.6rem,4.5vh,2.4rem)] inline-flex items-center justify-center rounded-full bg-[#2f6dff] px-[clamp(1.6rem,4vw,2.6rem)] py-[clamp(0.7rem,1.5vw,0.95rem)] text-[clamp(0.72rem,1.15vw,0.92rem)] font-bold uppercase tracking-[0.16em] text-white transition-transform hover:scale-[1.03]"
           >
             Parlons de votre projet

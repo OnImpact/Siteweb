@@ -51,6 +51,12 @@ function Index() {
         setLocked(true);
         setService(1);
       }
+      if (window.location.hash === "#contact") {
+        manualRef.current = true;
+        setLocked(true);
+        setService(0);
+        setScrollTo("#contact");
+      }
     };
     applyHash();
     window.addEventListener("hashchange", applyHash);
@@ -95,19 +101,13 @@ function Index() {
           <a className="story-link" href="#apropos">
             À propos
           </a>
-          <a
-            className="story-link"
-            href="https://calendly.com/contact-onimpact/prise-de-contact"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+          <a className="story-link" href="#contact" onClick={openService(0, "#contact")}>
             Contact
           </a>
         </nav>
         <a
-          href="https://calendly.com/contact-onimpact/prise-de-contact"
-          target="_blank"
-          rel="noopener noreferrer"
+          href="#contact"
+          onClick={openService(0, "#contact")}
           className="inline-flex shrink-0 items-center gap-2 rounded-full bg-primary px-[clamp(0.75rem,1.6vw,1rem)] py-[clamp(0.3rem,0.7vw,0.4rem)] text-[clamp(0.72rem,1vw,0.875rem)] font-medium text-primary-foreground transition-transform hover:scale-105"
         >
           Nous contacter
