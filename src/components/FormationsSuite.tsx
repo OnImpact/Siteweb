@@ -207,52 +207,39 @@ const CALENDLY_URL =
   "https://calendly.com/contact-onimpact/prise-de-contact?background_color=2f6dff&text_color=ffffff&primary_color=2f6dff";
 
 function CalendlyEmbed() {
-  const parentRef = useRef<HTMLDivElement>(null);
+  const [height, setHeight] = useState(1100);
+  const [src, setSrc] = useState("");
 
   useEffect(() => {
-    const parent = parentRef.current;
-    if (!parent) return;
+    const url = new URL(CALENDLY_URL);
+    url.searchParams.set("embed_domain", window.location.host);
+    url.searchParams.set("embed_type", "Inline");
+    url.searchParams.set("hide_gdpr_banner", "1");
+    setSrc(url.toString());
 
-    const init = () => {
-      const calendly = (
-        window as Window & {
-          Calendly?: { initInlineWidget: (options: { url: string; parentElement: HTMLElement }) => void };
-        }
-      ).Calendly;
-      if (!calendly || !parentRef.current) return;
-      parentRef.current.innerHTML = "";
-      calendly.initInlineWidget({ url: CALENDLY_URL, parentElement: parentRef.current });
+    const onMessage = (event: MessageEvent) => {
+      if (event.origin !== "https://calendly.com") return;
+      const data = event.data as { event?: string; payload?: { height?: string } };
+      if (data?.event !== "calendly.page_height" || !data.payload?.height) return;
+      const px = Number.parseInt(data.payload.height, 10);
+      if (px > 0) setHeight(px);
     };
 
-    if (
-      (
-        window as Window & {
-          Calendly?: { initInlineWidget: (options: { url: string; parentElement: HTMLElement }) => void };
-        }
-      ).Calendly
-    ) {
-      init();
-      return () => {
-        parent.innerHTML = "";
-      };
-    }
-
-    const src = "https://assets.calendly.com/assets/external/widget.js";
-    let script = document.querySelector<HTMLScriptElement>(`script[src="${src}"]`);
-    if (!script) {
-      script = document.createElement("script");
-      script.src = src;
-      script.async = true;
-      document.body.appendChild(script);
-    }
-    script.addEventListener("load", init);
-    return () => {
-      script?.removeEventListener("load", init);
-      parent.innerHTML = "";
-    };
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
   }, []);
 
-  return <div ref={parentRef} className="h-[740px] w-full min-w-[320px]" />;
+  if (!src) return <div className="min-h-[740px] w-full" />;
+
+  return (
+    <iframe
+      title="Prendre rendez-vous"
+      src={src}
+      scrolling="no"
+      className="block w-full overflow-hidden border-0 bg-transparent"
+      style={{ height }}
+    />
+  );
 }
 
 function MeteorVisual({ fixed }: { fixed?: { top: number; opacity: number } }) {
@@ -307,9 +294,11 @@ function MeteorDrop() {
     const update = () => {
       const phraseBottom = phrase.getBoundingClientRect().bottom + window.scrollY;
       const slotTop = slot.getBoundingClientRect().top + window.scrollY;
-      const appear = Math.max(76, window.innerHeight * 0.1);
+      const meteorHeight = slot.offsetHeight || 96;
+      const gap = Math.max(1, slotTop - phraseBottom);
+      const landing = Math.min(window.innerHeight * 0.34, Math.max(120, gap - window.innerHeight * 0.42));
       const start = phraseBottom;
-      const end = Math.max(start + 1, slotTop - window.innerHeight * 0.36);
+      const end = Math.max(start + 1, slotTop - landing);
       const y = window.scrollY;
 
       if (y < start) {
@@ -323,9 +312,10 @@ function MeteorDrop() {
         return;
       }
 
+      const fromTop = -meteorHeight;
       const slotScreen = slot.getBoundingClientRect().top;
-      const top = appear + (slotScreen - appear) * progress;
-      const opacity = Math.min(1, progress / 0.16);
+      const top = fromTop + (slotScreen - fromTop) * progress;
+      const opacity = Math.min(1, progress / 0.14);
       poseRef.current = { top, opacity };
       const flying = flyingRef.current;
       if (flying) {
