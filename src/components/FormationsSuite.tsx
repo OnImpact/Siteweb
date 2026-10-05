@@ -1,5 +1,6 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
+import { Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+
 import illustratorIcon from "@/assets/tools/illustrator.png";
 import photoshopIcon from "@/assets/tools/photoshop.png";
 import canvaIcon from "@/assets/tools/canva.png";
@@ -9,7 +10,6 @@ import geminiIcon from "@/assets/tools/gemini.png";
 import claudeIcon from "@/assets/tools/claude.png";
 import higgsfieldIcon from "@/assets/tools/higgsfield.png";
 import meteorite from "@/assets/meteorite.png";
-import constellationBg from "@/assets/fond-constellation.png";
 
 const MARQUEE = [
   "UN PROMPT QUI SERT",
@@ -108,46 +108,42 @@ function ToolConstellation({ tools }: { tools: readonly string[] }) {
     { x: 106, y: 16 },
   ];
   const polyline = points.map((p) => `${p.x},${p.y}`).join(" ");
-  const pathD = points.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ");
-  const sparkRef = useRef<SVGEllipseElement>(null);
-
-  useLayoutEffect(() => {
-    const spark = sparkRef.current;
-    const svg = spark?.ownerSVGElement;
-    if (!spark || !svg) return;
-
-    const fit = () => {
-      const box = svg.getBoundingClientRect();
-      if (!box.width || !box.height) return;
-      const radius = 5.5;
-      spark.setAttribute("rx", String(radius / (box.width / 100)));
-      spark.setAttribute("ry", String(radius / (box.height / 100)));
-    };
-
-    fit();
-    const observer = new ResizeObserver(fit);
-    observer.observe(svg);
-    return () => observer.disconnect();
-  }, []);
 
   return (
-    <div className="relative h-[clamp(22rem,56vh,40rem)] w-full overflow-hidden bg-black">
-      <img
-        src={constellationBg}
-        alt=""
+    <div className="relative -mt-[clamp(3rem,8vh,5.5rem)] h-[clamp(22rem,56vh,40rem)] w-full overflow-visible">
+      <svg
+        viewBox="0 0 100 100"
+        preserveAspectRatio="none"
+        className="constellation-aura pointer-events-none absolute inset-0 h-full w-full"
         aria-hidden
-        className="constellation-bg pointer-events-none absolute inset-0 h-full w-full object-cover object-center"
-        draggable={false}
-      />
-      <img
-        src={constellationBg}
-        alt=""
-        aria-hidden
-        className="constellation-bg-blur pointer-events-none absolute inset-0 h-full w-full object-cover object-center"
-        draggable={false}
-      />
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-[22%] bg-gradient-to-b from-black via-black/55 to-transparent" />
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[24%] bg-gradient-to-t from-black via-black/55 to-transparent" />
+      >
+        <polyline
+          points={polyline}
+          fill="none"
+          stroke="#2f6dff"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          vectorEffect="non-scaling-stroke"
+          className="constellation-aura-stroke"
+        />
+        <polyline
+          points={polyline}
+          fill="none"
+          stroke="#b9d2ff"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          vectorEffect="non-scaling-stroke"
+          className="constellation-aura-core"
+        />
+      </svg>
+      {CONSTELLATION_LAYOUT.map((pos) => (
+        <span
+          key={`aura-${pos.x}-${pos.y}`}
+          aria-hidden
+          className="constellation-aura-node pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 rounded-full"
+          style={{ left: `${pos.x}%`, top: `${pos.y}%` }}
+        />
+      ))}
       <svg
         viewBox="0 0 100 100"
         preserveAspectRatio="none"
@@ -158,23 +154,11 @@ function ToolConstellation({ tools }: { tools: readonly string[] }) {
           points={polyline}
           fill="none"
           stroke="white"
-          strokeWidth="2"
+          strokeWidth="1"
           strokeLinecap="round"
           strokeLinejoin="round"
           vectorEffect="non-scaling-stroke"
         />
-        <path id="constellation-route" d={pathD} fill="none" />
-        <ellipse ref={sparkRef} rx="0.29" ry="0.91" fill="#fff" className="constellation-spark">
-          <animateMotion
-            dur="18s"
-            repeatCount="indefinite"
-            keyPoints="0;1;0"
-            keyTimes="0;0.5;1"
-            calcMode="linear"
-          >
-            <mpath href="#constellation-route" />
-          </animateMotion>
-        </ellipse>
       </svg>
 
       {CONSTELLATION_LAYOUT.map((pos, i) => {
@@ -203,167 +187,16 @@ function ToolConstellation({ tools }: { tools: readonly string[] }) {
   );
 }
 
-const CALENDLY_URL =
-  "https://calendly.com/contact-onimpact/prise-de-contact?background_color=2f6dff&text_color=ffffff&primary_color=2f6dff";
-
-function CalendlyEmbed() {
-  const [height, setHeight] = useState(1100);
-  const [src, setSrc] = useState("");
-
-  useEffect(() => {
-    const url = new URL(CALENDLY_URL);
-    url.searchParams.set("embed_domain", window.location.host);
-    url.searchParams.set("embed_type", "Inline");
-    url.searchParams.set("hide_gdpr_banner", "1");
-    setSrc(url.toString());
-
-    const onMessage = (event: MessageEvent) => {
-      if (event.origin !== "https://calendly.com") return;
-      const data = event.data as { event?: string; payload?: { height?: string } };
-      if (data?.event !== "calendly.page_height" || !data.payload?.height) return;
-      const px = Number.parseInt(data.payload.height, 10);
-      if (px > 0) setHeight(px);
-    };
-
-    window.addEventListener("message", onMessage);
-    return () => window.removeEventListener("message", onMessage);
-  }, []);
-
-  if (!src) return <div className="min-h-[740px] w-full" />;
-
-  return (
-    <iframe
-      title="Prendre rendez-vous"
-      src={src}
-      scrolling="no"
-      className="block w-full overflow-hidden border-0 bg-transparent"
-      style={{ height }}
-    />
-  );
-}
-
-function MeteorVisual({ fixed }: { fixed?: { top: number; opacity: number } }) {
-  return (
-    <img
-      src={meteorite}
-      alt=""
-      aria-hidden
-      draggable={false}
-      className="pointer-events-none block h-[clamp(4.4rem,11vw,7.2rem)] w-auto origin-center -translate-x-[22%] translate-y-[6%] -rotate-45 select-none"
-      style={
-        fixed
-          ? {
-              position: "fixed",
-              top: fixed.top,
-              left: "50%",
-              zIndex: 40,
-              opacity: fixed.opacity,
-              transform: "translateX(-72%) translateY(6%) rotate(-45deg)",
-            }
-          : undefined
-      }
-    />
-  );
-}
-
 function MeteorDrop() {
-  const slotRef = useRef<HTMLDivElement>(null);
-  const flyingRef = useRef<HTMLImageElement>(null);
-  const poseRef = useRef({ top: 80, opacity: 0 });
-  const [phase, setPhase] = useState<"wait" | "fall" | "rest">("wait");
-
-  useEffect(() => {
-    if (phase !== "fall") return;
-    const flying = flyingRef.current;
-    if (!flying) return;
-    flying.style.top = `${poseRef.current.top}px`;
-    flying.style.opacity = String(poseRef.current.opacity);
-  }, [phase]);
-
-  useEffect(() => {
-    const phrase = document.getElementById("methode-phrase");
-    const slot = slotRef.current;
-    if (!phrase || !slot) return;
-
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      setPhase("rest");
-      return;
-    }
-
-    let raf = 0;
-    const update = () => {
-      const phraseBottom = phrase.getBoundingClientRect().bottom + window.scrollY;
-      const slotTop = slot.getBoundingClientRect().top + window.scrollY;
-      const meteorHeight = slot.offsetHeight || 96;
-      const gap = Math.max(1, slotTop - phraseBottom);
-      const landing = Math.min(window.innerHeight * 0.34, Math.max(120, gap - window.innerHeight * 0.42));
-      const start = phraseBottom;
-      const end = Math.max(start + 1, slotTop - landing);
-      const y = window.scrollY;
-
-      if (y < start) {
-        setPhase((current) => (current === "wait" ? current : "wait"));
-        return;
-      }
-
-      const progress = Math.min(1, (y - start) / (end - start));
-      if (progress >= 1) {
-        setPhase((current) => (current === "rest" ? current : "rest"));
-        return;
-      }
-
-      const fromTop = -meteorHeight;
-      const slotScreen = slot.getBoundingClientRect().top;
-      const top = fromTop + (slotScreen - fromTop) * progress;
-      const opacity = Math.min(1, progress / 0.14);
-      poseRef.current = { top, opacity };
-      const flying = flyingRef.current;
-      if (flying) {
-        flying.style.top = `${top}px`;
-        flying.style.opacity = String(opacity);
-      }
-      setPhase((current) => (current === "fall" ? current : "fall"));
-    };
-
-    const onScroll = () => {
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(update);
-    };
-
-    update();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-    };
-  }, []);
-
   return (
-    <div ref={slotRef} className="flex min-h-[clamp(4.4rem,11vw,7.2rem)] items-center justify-center">
-      {phase === "rest" ? <MeteorVisual /> : null}
-      {phase === "fall"
-        ? createPortal(
-            <img
-              ref={flyingRef}
-              src={meteorite}
-              alt=""
-              aria-hidden
-              draggable={false}
-              className="pointer-events-none h-[clamp(4.4rem,11vw,7.2rem)] w-auto origin-center select-none"
-              style={{
-                position: "fixed",
-                top: poseRef.current.top,
-                left: "50%",
-                zIndex: 40,
-                opacity: poseRef.current.opacity,
-                transform: "translateX(-72%) translateY(6%) rotate(-45deg)",
-              }}
-            />,
-            document.body,
-          )
-        : null}
+    <div className="flex min-h-[clamp(4.4rem,11vw,7.2rem)] items-center justify-center">
+      <img
+        src={meteorite}
+        alt=""
+        aria-hidden
+        draggable={false}
+        className="pointer-events-none block h-[clamp(4.4rem,11vw,7.2rem)] w-auto origin-center -translate-x-[22%] translate-y-[6%] -rotate-45 select-none"
+      />
     </div>
   );
 }
@@ -485,7 +318,7 @@ export function FormationsSuite() {
       </div>
 
       <section id="apropos" className="relative bg-black text-center">
-        <div className="px-[clamp(1rem,4vw,1.5rem)] pt-[clamp(8rem,18vh,13rem)] pb-[clamp(12rem,26vh,20rem)]">
+        <div className="relative z-10 px-[clamp(1rem,4vw,1.5rem)] pt-[clamp(8rem,18vh,13rem)] pb-[clamp(0.75rem,2vh,1.4rem)]">
           <h2 className="mx-auto inline-block text-left font-display leading-[0.92] tracking-wide">
             <span className="block text-[clamp(1.7rem,5.4vw,3.65rem)] text-[#b4b4b4]">
               L&apos;OUTIL N&apos;EST RIEN
@@ -495,14 +328,14 @@ export function FormationsSuite() {
             </span>
           </h2>
 
-          <p className="mt-[clamp(4.4rem,12vh,7rem)] text-[clamp(0.74rem,1.15vw,0.95rem)] uppercase tracking-[0.42em] text-white">
+          <p className="mt-[clamp(2rem,5vh,3.2rem)] text-[clamp(0.74rem,1.15vw,0.95rem)] uppercase tracking-[0.42em] text-white">
             Nos solutions
           </p>
-          <p className="mt-[clamp(1.15rem,2.8vh,1.9rem)] font-display text-[clamp(1.85rem,5.1vw,3.35rem)] leading-[1.15] tracking-wide text-white">
+          <p className="mt-[clamp(0.7rem,1.6vh,1.15rem)] font-display text-[clamp(1.85rem,5.1vw,3.35rem)] leading-[1.15] tracking-wide text-white">
             TROIS PILIERS FONDAMENTAUX.
           </p>
 
-          <div className="mt-[clamp(2.6rem,6.5vh,4rem)] flex flex-wrap items-center justify-center gap-[clamp(0.85rem,1.8vw,1.35rem)]">
+          <div className="mt-[clamp(1.25rem,3vh,2rem)] flex flex-wrap items-center justify-center gap-[clamp(0.85rem,1.8vw,1.35rem)]">
             {PILLARS.map((item) => {
               const selected = item.id === pillar;
               return (
@@ -524,10 +357,10 @@ export function FormationsSuite() {
 
           <p
             id="methode-phrase"
-            className="mx-auto mt-[clamp(2.4rem,5.5vh,3.6rem)] max-w-3xl text-[clamp(0.92rem,1.45vw,1.18rem)] font-bold leading-[1.7] text-white"
+            className="mx-auto mt-[clamp(1.15rem,2.6vh,1.8rem)] max-w-3xl text-[clamp(0.92rem,1.45vw,1.18rem)] font-bold leading-[1.45] text-white"
           >
             On Ne Vous Apprend Pas Un Outil. On Vous Apprend
-            <span className="mt-[0.65em] block">
+            <span className="mt-[0.35em] block">
               À Choisir Le Bon, Au Bon Moment, Pour Le Bon Résultat.
             </span>
           </p>
@@ -541,16 +374,14 @@ export function FormationsSuite() {
         <h2 className="text-center font-display text-[clamp(2.4rem,9vw,5.8rem)] leading-none tracking-wide">
           BRISEZ VOS LIMITES
         </h2>
+        <Link
+          to="/contact"
+          className="mt-[clamp(1.6rem,4.5vh,2.4rem)] inline-flex items-center justify-center rounded-full bg-[#2f6dff] px-[clamp(1.6rem,4vw,2.6rem)] py-[clamp(0.7rem,1.5vw,0.95rem)] text-[clamp(0.72rem,1.15vw,0.92rem)] font-bold uppercase tracking-[0.16em] text-white transition-transform hover:scale-[1.03]"
+        >
+          Osez vous lancer
+        </Link>
       </section>
 
-      <section id="contact" className="scroll-mt-24 bg-[#2f6dff] pb-[clamp(2.5rem,7vh,4.5rem)]">
-        <h2 className="flex min-h-[clamp(6.5rem,18vh,9.5rem)] items-center justify-center px-6 text-center font-display text-[clamp(1.8rem,6vw,3.6rem)] tracking-[0.08em] text-white">
-          CONTACTEZ NOUS
-        </h2>
-        <div className="mx-auto mt-[clamp(1.5rem,4vh,2.5rem)] w-full max-w-5xl overflow-hidden px-[clamp(1rem,4vw,1.5rem)]">
-          <CalendlyEmbed />
-        </div>
-      </section>
     </div>
   );
 }

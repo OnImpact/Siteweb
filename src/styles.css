@@ -297,43 +297,28 @@
   mask-image: linear-gradient(to bottom, #000 0%, #000 10%, transparent 28%);
 }
 
-.constellation-bg {
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 20%, #000 80%, transparent 100%);
-  mask-image: linear-gradient(to bottom, transparent 0%, #000 20%, #000 80%, transparent 100%);
+.constellation-aura {
+  overflow: visible;
+  filter: blur(clamp(36px, 4.8vw, 68px));
+  opacity: 0.92;
 }
 
-.constellation-bg-blur {
-  filter: blur(42px);
-  transform: scale(1.08);
-  -webkit-mask-image: linear-gradient(
-    to bottom,
-    transparent 0%,
-    #000 10%,
-    transparent 30%,
-    transparent 70%,
-    #000 90%,
-    transparent 100%
-  );
-  mask-image: linear-gradient(
-    to bottom,
-    transparent 0%,
-    #000 10%,
-    transparent 30%,
-    transparent 70%,
-    #000 90%,
-    transparent 100%
-  );
+.constellation-aura-stroke {
+  stroke-width: clamp(120px, 18vw, 260px);
 }
 
-.constellation-spark {
-  filter: drop-shadow(0 0 4px #fff) drop-shadow(0 0 10px rgba(190, 216, 255, 0.95));
+.constellation-aura-core {
+  stroke-width: clamp(28px, 4vw, 64px);
+  opacity: 0.85;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .constellation-spark {
-    display: none;
-  }
+.constellation-aura-node {
+  width: clamp(14rem, 26vw, 22rem);
+  height: clamp(14rem, 26vw, 22rem);
+  background: radial-gradient(circle, rgb(110 162 255 / 90%) 0%, rgb(47 109 255 / 55%) 42%, transparent 72%);
+  filter: blur(16px);
 }
+
 
 @keyframes suite-marquee {
   from {

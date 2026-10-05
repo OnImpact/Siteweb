@@ -1,7 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState, type MouseEvent } from "react";
 import { ArrowUpRight } from "lucide-react";
-import { AsteroidScroll } from "@/components/AsteroidScroll";
+import { AsteroidScroll, HERO_ANIM_VH } from "@/components/AsteroidScroll";
 import { CreationWebSuite } from "@/components/CreationWebSuite";
 import { FormationsSuite } from "@/components/FormationsSuite";
 import { Starfield } from "@/components/Starfield";
@@ -27,10 +27,17 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
+function scrollToServices(behavior: ScrollBehavior = "smooth") {
+  const el = document.querySelector("[data-hero-scroll]");
+  if (!el) return;
+  const animSpan = window.innerHeight * HERO_ANIM_VH;
+  const top = el.getBoundingClientRect().top + window.scrollY + animSpan * 0.92;
+  window.scrollTo({ top, behavior });
+}
+
 function Index() {
   const [service, setService] = useState<0 | 1>(0);
   const [locked, setLocked] = useState(false);
-  const [scrollTo, setScrollTo] = useState<string | null>(null);
   const manualRef = useRef(false);
 
   const onPageChange = useCallback((next: 0 | 1, source: "auto" | "manual") => {
@@ -46,16 +53,18 @@ function Index() {
 
   useEffect(() => {
     const applyHash = () => {
-      if (window.location.hash === "#creation") {
-        manualRef.current = true;
-        setLocked(true);
-        setService(1);
-      }
-      if (window.location.hash === "#contact") {
+      const hash = window.location.hash;
+      if (hash === "#nos-services") {
         manualRef.current = true;
         setLocked(true);
         setService(0);
-        setScrollTo("#contact");
+        requestAnimationFrame(() => scrollToServices("auto"));
+      }
+      if (hash === "#nos-services-web" || hash === "#creation") {
+        manualRef.current = true;
+        setLocked(true);
+        setService(1);
+        requestAnimationFrame(() => scrollToServices("auto"));
       }
     };
     applyHash();
@@ -63,19 +72,13 @@ function Index() {
     return () => window.removeEventListener("hashchange", applyHash);
   }, []);
 
-  useEffect(() => {
-    if (!scrollTo) return;
-    document.querySelector(scrollTo)?.scrollIntoView({ behavior: "smooth", block: "start" });
-    setScrollTo(null);
-  }, [service, scrollTo]);
-
-  const openService = (next: 0 | 1, hash: string) => (event: MouseEvent<HTMLAnchorElement>) => {
+  const openService = (next: 0 | 1) => (event: MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
     manualRef.current = true;
     setLocked(true);
     setService(next);
-    setScrollTo(hash);
-    window.history.replaceState(null, "", hash);
+    scrollToServices();
+    window.history.replaceState(null, "", next === 0 ? "#nos-services" : "#nos-services-web");
   };
 
   return (
@@ -92,27 +95,23 @@ function Index() {
           />
         </a>
         <nav className="hidden gap-[clamp(1rem,2.4vw,2rem)] text-[clamp(0.75rem,1.05vw,0.9rem)] text-foreground/80 lg:flex">
-          <a className="story-link" href="#services" onClick={openService(0, "#services")}>
+          <a className="story-link" href="#nos-services" onClick={openService(0)}>
             Formations
           </a>
-          <a className="story-link" href="#creation" onClick={openService(1, "#creation")}>
+          <a className="story-link" href="#nos-services-web" onClick={openService(1)}>
             Création Web
           </a>
           <a className="story-link" href="#apropos">
             À propos
           </a>
-          <a className="story-link" href="#contact" onClick={openService(0, "#contact")}>
-            Contact
-          </a>
         </nav>
-        <a
-          href="#contact"
-          onClick={openService(0, "#contact")}
+        <Link
+          to="/contact"
           className="inline-flex shrink-0 items-center gap-2 rounded-full bg-primary px-[clamp(0.75rem,1.6vw,1rem)] py-[clamp(0.3rem,0.7vw,0.4rem)] text-[clamp(0.72rem,1vw,0.875rem)] font-medium text-primary-foreground transition-transform hover:scale-105"
         >
           Nous contacter
           <ArrowUpRight className="size-[1.05em]" />
-        </a>
+        </Link>
       </header>
 
       <main className="relative z-10">

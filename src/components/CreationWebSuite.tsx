@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import adventureCover from "@/assets/creation-web/adventure-cover.png";
 import adventureSite from "@/assets/creation-web/adventure-site.png";
 import earthHorizon from "@/assets/creation-web/earth-horizon.png";
@@ -123,19 +124,12 @@ export function CreationWebSuite() {
             <br />
             DIMENSION À VOTRE MARQUE
           </h2>
-          <a
-            href="#contact"
-            onClick={(event) => {
-              event.preventDefault();
-              if (window.location.hash !== "#contact") {
-                window.history.replaceState(null, "", "#contact");
-              }
-              window.dispatchEvent(new HashChangeEvent("hashchange"));
-            }}
+          <Link
+            to="/contact"
             className="mt-[clamp(1.6rem,4.5vh,2.4rem)] inline-flex items-center justify-center rounded-full bg-[#2f6dff] px-[clamp(1.6rem,4vw,2.6rem)] py-[clamp(0.7rem,1.5vw,0.95rem)] text-[clamp(0.72rem,1.15vw,0.92rem)] font-bold uppercase tracking-[0.16em] text-white transition-transform hover:scale-[1.03]"
           >
             Parlons de votre projet
-          </a>
+          </Link>
         </div>
       </section>
     </div>
