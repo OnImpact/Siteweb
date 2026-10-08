@@ -20,7 +20,7 @@ export function CreationWebSuite() {
         className="px-[clamp(1rem,4vw,1.5rem)] pt-[clamp(3.2rem,9vh,5.5rem)] pb-[clamp(3rem,8vh,5rem)]"
       >
         <div className="mx-auto grid w-full max-w-6xl gap-[clamp(2.4rem,6vw,4.5rem)] md:grid-cols-2">
-          <article>
+          <article className="text-center md:text-left">
             <p className="text-[clamp(0.72rem,1.15vw,0.9rem)] font-bold uppercase tracking-[0.18em] text-white">
               Un site qui performe
             </p>
@@ -29,11 +29,11 @@ export function CreationWebSuite() {
               <br />
               L&apos;ACTION.
             </h2>
-            <p className="mt-[clamp(1rem,2.6vh,1.5rem)] max-w-sm text-[clamp(0.82rem,1.25vw,1rem)] leading-relaxed text-white/70">
+            <p className="mx-auto mt-[clamp(1rem,2.6vh,1.5rem)] max-w-sm text-[clamp(0.82rem,1.25vw,1rem)] leading-relaxed text-white/70 md:mx-0">
               Un parcours pensé pour la prise de contact.
             </p>
           </article>
-          <article>
+          <article className="text-center md:text-left">
             <p className="text-[clamp(0.72rem,1.15vw,0.9rem)] font-bold uppercase tracking-[0.18em] text-white">
               Un site qui rayonne
             </p>
@@ -42,7 +42,7 @@ export function CreationWebSuite() {
               <br />
               LES ESPRITS.
             </h2>
-            <p className="mt-[clamp(1rem,2.6vh,1.5rem)] max-w-sm text-[clamp(0.82rem,1.25vw,1rem)] leading-relaxed text-white/70">
+            <p className="mx-auto mt-[clamp(1rem,2.6vh,1.5rem)] max-w-sm text-[clamp(0.82rem,1.25vw,1rem)] leading-relaxed text-white/70 md:mx-0">
               Un univers graphique qui vous distingue.
             </p>
           </article>
@@ -62,7 +62,7 @@ export function CreationWebSuite() {
 
       <section className="px-[clamp(1rem,4vw,1.5rem)] py-[clamp(3.6rem,10vh,6.5rem)]">
         <div className="mx-auto grid w-full max-w-6xl items-center gap-[clamp(1.8rem,5vw,3.5rem)] md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
-          <div>
+          <div className="text-center md:text-left">
             <h2 className="font-display text-[clamp(2.3rem,6.4vw,4.4rem)] leading-[0.9] tracking-wide">
               DE LA
               <br />

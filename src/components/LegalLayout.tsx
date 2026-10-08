@@ -2,7 +2,15 @@ import type { ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import logo from "@/assets/logo-on-impact.png";
 
-export function LegalLayout({ title, children }: { title: string; children: ReactNode }) {
+export function LegalLayout({
+  title,
+  updated = "1er octobre 2026",
+  children,
+}: {
+  title: string;
+  updated?: string;
+  children: ReactNode;
+}) {
   return (
     <div className="min-h-screen bg-black text-white">
       <header className="flex items-center px-[clamp(0.9rem,4vw,2.5rem)] py-5">
@@ -12,7 +20,7 @@ export function LegalLayout({ title, children }: { title: string; children: Reac
       </header>
       <article className="mx-auto w-full max-w-3xl px-[clamp(1rem,4vw,1.5rem)] pb-8 pt-4">
         <h1 className="font-display text-[clamp(2rem,6vw,3.4rem)] leading-none tracking-wide">{title}</h1>
-        <p className="mt-4 text-sm text-white/45">Dernière mise à jour : 1er octobre 2026</p>
+        <p className="mt-4 text-sm text-white/45">Dernière mise à jour : {updated}</p>
         <div className="mt-10 space-y-8 text-[0.95rem] leading-relaxed text-white/80">{children}</div>
       </article>
     </div>

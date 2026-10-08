@@ -355,7 +355,7 @@
 
 .stat-progress {
   transform-origin: left center;
-  animation: stat-progress 6.5s linear both;
+  animation: stat-progress 3.7s linear both;
 }
 
 @media (prefers-reduced-motion: reduce) {

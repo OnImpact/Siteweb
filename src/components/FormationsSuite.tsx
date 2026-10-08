@@ -50,7 +50,7 @@ const STATS = [
   },
 ] as const;
 
-const STAT_MS = 7000;
+const STAT_MS = 4000;
 
 const PILLARS = [
   {
@@ -203,7 +203,7 @@ function MeteorDrop() {
 
 function StatBoard({ slide }: { slide: (typeof STATS)[number] }) {
   return (
-    <div className="flex w-full flex-col gap-[clamp(2rem,8vw,6rem)] pr-[clamp(1.4rem,6vw,3.4rem)] md:flex-row md:items-start md:justify-between">
+    <div className="flex w-full flex-col items-center gap-[clamp(2rem,8vw,6rem)] text-center md:flex-row md:items-start md:justify-between md:pr-[clamp(1.4rem,6vw,3.4rem)] md:text-left">
       <article className="min-w-0 flex-1">
         <p className="inline-block bg-[#2f6dff] px-[0.18em] py-[0.06em] font-sans text-[clamp(4.4rem,14vw,8.4rem)] font-black leading-[0.82] tabular-nums text-white">
           {slide.percent}
@@ -219,7 +219,7 @@ function StatBoard({ slide }: { slide: (typeof STATS)[number] }) {
         </p>
       </article>
       <article className="flex-none">
-        <div className="inline-flex translate-x-[clamp(1.4rem,6vw,3.4rem)] translate-y-[clamp(0.5rem,1.8vh,1.1rem)] flex-col items-center">
+        <div className="inline-flex flex-col items-center md:translate-x-[clamp(1.4rem,6vw,3.4rem)] md:translate-y-[clamp(0.5rem,1.8vh,1.1rem)]">
           <p className="bg-[#2f6dff] px-[0.55em] pb-[0.32em] pt-[0.90em] text-center font-display leading-[0.88] text-white">
             <span className="block text-[clamp(1.15rem,3.2vw,1.9rem)]">{slide.lossLead}</span>
             <span className="mt-[0.22em] block text-[clamp(3.6rem,10vw,6.4rem)]">{slide.lossWord}</span>
@@ -319,7 +319,7 @@ export function FormationsSuite() {
 
       <section id="apropos" className="relative bg-black text-center">
         <div className="relative z-10 px-[clamp(1rem,4vw,1.5rem)] pt-[clamp(8rem,18vh,13rem)] pb-[clamp(0.75rem,2vh,1.4rem)]">
-          <h2 className="mx-auto inline-block text-left font-display leading-[0.92] tracking-wide">
+          <h2 className="mx-auto inline-block text-center font-display leading-[0.92] tracking-wide md:text-left">
             <span className="block text-[clamp(1.7rem,5.4vw,3.65rem)] text-[#b4b4b4]">
               L&apos;OUTIL N&apos;EST RIEN
             </span>
