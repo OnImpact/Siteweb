@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 const CALENDLY_URL =
-  "https://calendly.com/contact-onimpact/prise-de-contact?background_color=2f6dff&text_color=ffffff&primary_color=2f6dff";
+  "https://calendly.com/contact-onimpact/prise-de-contact?background_color=000000&text_color=ffffff&primary_color=2f6dff";
 
 export function CalendlyEmbed() {
   const [height, setHeight] = useState(1100);
