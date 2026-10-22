@@ -21,7 +21,7 @@ function Subheading({ children }: { children: ReactNode }) {
 
 function TermsOfSale() {
   return (
-    <LegalLayout title="Conditions générales de vente" updated="17 août 2026">
+    <LegalLayout title="Conditions générales de vente" updated="22 octobre 2026">
       <p className="font-semibold text-white">de la SAS ON IMPACT</p>
       <p>
         Toute commande passée à la SAS On Impact entraîne de plein droit l’acceptation des présentes
@@ -46,7 +46,7 @@ function TermsOfSale() {
           dénommés « le Client »).
         </p>
         <p>Elles régissent les relations contractuelles entre le Prestataire et le Client.</p>
-        <Subheading>1. Description des prestations d’Audience Performance</Subheading>
+        <Subheading>1. Description des prestations d’On Impact</Subheading>
         <p>
           Le Prestataire propose des prestations telles que la conception, le développement,
           l’édition, l’exploitation, la maintenance et la commercialisation de logiciels,
