@@ -198,7 +198,7 @@ export function AsteroidScroll({
             <h1 className="mx-auto w-[min(94cqw,92rem)]">
               <img
                 src={heroTitle}
-                alt="Créer votre impact"
+                alt="Créez votre impact"
                 className="h-auto w-full select-none"
                 draggable={false}
               />
